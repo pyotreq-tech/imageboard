@@ -1,0 +1,22 @@
+body {
+    background-color: lightsteelblue;
+}
+
+#main {
+    display: flex;
+    flex-direction: row;
+    flex-flow: row wrap;
+    justify-content: space-evenly;
+}
+
+.tile {
+    margin-bottom: 30px;
+    border: 1px black solid;
+    width: 400px;
+    height: 400px;
+}
+
+img {
+    width: 400px;
+    height: 300px;
+}

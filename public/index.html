@@ -7,10 +7,21 @@
 <body>
         <h1>Imageboard</h1>
         <div id="main">
-            <div v-for="image in images" class="tile">
-                <img :src="image.url">
-                <p>{{ image.title }}</p>
-            </div> 
+            <form>
+                <!-- v-modal connects input field with data object from script.js -->
+                <input v-model='title' type="text" placeholder="title" name="title">
+                <input v-model='description' type="text" placeholder="description" name="description">
+                <input v-model='username' type="text" placeholder="username" name="username">
+                <!-- with file we are listening for a change event instead of v-model -->
+                <input @change='handleChange' type="file" name="file" accept="image/*">
+                <button @click='handleClick'>Submit</button>
+            </form>
+            <div id="images-container">
+                <div v-for="image in images" class="tile">
+                    <img :src="image.url">
+                    <p>{{ image.title }}</p>
+                </div> 
+            </div>
         </div>
     <script src="/js/vue.js"></script>
     <script src="/js/axios.min.js"></script>

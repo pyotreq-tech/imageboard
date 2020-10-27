@@ -3,23 +3,30 @@
 <head>
     <title>Image Board</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&display=swap" rel="stylesheet">
+
 </head>
 <body>
-        <h1>Imageboard</h1>
-        <div id="main">
-            <form>
+    <div id="main">
+            <h1>Imageboard</h1>
+            <form id="form-upload">
                 <!-- v-modal connects input field with data object from script.js -->
-                <input v-model='title' type="text" placeholder="title" name="title">
-                <input v-model='description' type="text" placeholder="description" name="description">
-                <input v-model='username' type="text" placeholder="username" name="username">
+                <input v-model='title' type="text" placeholder="title" name="title" class="input-field">
+                <input v-model='description' type="text" placeholder="description" name="description" class="input-field">
+                <input v-model='username' type="text" placeholder="username" name="username" class="input-field">
                 <!-- with file we are listening for a change event instead of v-model -->
-                <input @change='handleChange' type="file" name="file" accept="image/*">
-                <button @click='handleClick'>Submit</button>
+                <input @change='handleChange' type="file" name="file" accept="image/*" id="choose-file">
+                <button @click='handleClick' id="upload-button">Submit</button>
             </form>
             <div id="images-container">
                 <div v-for="image in images" class="tile">
-                    <img :src="image.url">
-                    <p>{{ image.title }}</p>
+                    <div class="tile-top"></div>
+                    <div class="tile-inner">
+                        <img :src="image.url" class="avatar">
+                    </div>
+                    <div class="tile-title">
+                        <p class="tile-text">{{ image.title }}</p>
+                    </div>
                 </div> 
             </div>
         </div>

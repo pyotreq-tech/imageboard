@@ -31,10 +31,12 @@ new Vue({
             formData.append("username", this.username);
             formData.append("file", this.file);
 
+            var me = this;
             axios
                 .post("/images", formData)
                 .then(function (response) {
                     console.log("response from /Post: ", response);
+                    me.images.unshift(response.data.rows);
                 })
                 .catch(function (err) {
                     console.log("error in posting images: ", err);

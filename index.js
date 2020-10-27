@@ -4,6 +4,7 @@ const db = require("./db");
 const multer = require("multer");
 const uidSafe = require("uid-safe");
 const path = require("path");
+const s3 = require("./s3");
 
 app.use(express.static("public"));
 
@@ -28,27 +29,36 @@ const uploader = multer({
 app.get("/images", (req, res) => {
     db.getImages()
         .then(({ rows }) => {
-            // console.log(rows);
+            console.log(rows);
             res.json(rows);
         })
         .catch((err) => {
             console.log("Error in getImages: ", err);
-            res.send("error");
+            res.sendStatus(500);
         });
 });
 
-app.post("/images", uploader.single("file"), (req, res) => {
+app.post("/images", uploader.single("file"), s3.upload, (req, res) => {
+    const { username, title, description } = req.body;
     console.log("image route reached: ", req.body);
     console.log("file: ", req.file);
-    // TO DO: insert all the information in the database, then send the information back to Vue:
-    // BUT WE have to wait until afternoon encounter to do that
-    // IT HAVE to work without refreshing
-
-    // we need to send response to Vue, so .then part can run, otherwise it will only run .catch
+    // we need to send response to Vue, so .then part can run, otherwise it will only run .catch in script.js
     if (req.file) {
-        res.json({
-            success: true,
-        });
+        const { filename } = req.file;
+        const url = `https://s3.amazonaws.com/spicedling/${filename}`;
+        db.postImage(url, username, title, description)
+            .then(({ rows }) => {
+                rows = rows[0];
+                res.json({
+                    rows,
+                });
+            })
+            .catch((err) => {
+                console.log("error in posting image: ", err);
+                res.json({
+                    success: false,
+                });
+            });
     } else {
         res.json({
             success: false,

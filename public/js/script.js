@@ -1,3 +1,28 @@
+// conditionally render component when there is an image id, start with falsy and on clock
+
+// say-greeting in html = sayGreeting in props
+
+Vue.component("modal-details", {
+    data: function () {
+        return {
+            image: "",
+        };
+    },
+    props: ["imageId"],
+    template: "#modal-template",
+    mounted: function () {
+        var me = this;
+        axios
+            .get(`/image/${this.imageId}`)
+            .then(function (response) {
+                me.image = response.data[0];
+            })
+            .catch(function (err) {
+                console.log("err in GET /singleImage", err);
+            });
+    },
+});
+
 new Vue({
     el: "#main",
     data: {
@@ -6,6 +31,7 @@ new Vue({
         description: "",
         username: "",
         file: null,
+        imageId: null,
     },
     mounted: function () {
         // important to store this in var so it does not lose its reference
@@ -30,7 +56,7 @@ new Vue({
             formData.append("description", this.title);
             formData.append("username", this.username);
             formData.append("file", this.file);
-
+            console.log("formData: ", formData);
             var me = this;
             axios
                 .post("/images", formData)
@@ -46,6 +72,9 @@ new Vue({
             // console.log("handleChange is running");
             // console.log("file: ", e.target.files[0]);
             this.file = e.target.files[0];
+        },
+        setValue: function (id) {
+            this.imageId = id;
         },
     },
 });

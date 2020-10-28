@@ -7,6 +7,7 @@ const path = require("path");
 const s3 = require("./s3");
 
 app.use(express.static("public"));
+app.use(express.urlencoded({ extended: false }));
 
 const diskStorage = multer.diskStorage({
     destination: function (req, file, callback) {
@@ -29,7 +30,7 @@ const uploader = multer({
 app.get("/images", (req, res) => {
     db.getImages()
         .then(({ rows }) => {
-            console.log(rows);
+            // console.log(rows);
             res.json(rows);
         })
         .catch((err) => {
@@ -64,6 +65,19 @@ app.post("/images", uploader.single("file"), s3.upload, (req, res) => {
             success: false,
         });
     }
+});
+
+app.get("/image/:id", (req, res) => {
+    const { id } = req.params;
+    db.getSingleImage(id)
+        .then(({ rows }) => {
+            console.log("rows: ", rows);
+            res.json(rows);
+        })
+        .catch((err) => {
+            console.log("Error in getSingleImage: ", err);
+            res.sendStatus(500);
+        });
 });
 
 app.listen(8080, () => {

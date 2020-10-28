@@ -8,64 +8,62 @@
 </head>
 <body>
     <div id="main">
-            <navbar>
-                <div id="navbar">
-
-                    <form id="form-upload">
-                        <i class="fas fa-camera-retro"></i>
-                        <!-- v-modal connects input field with data object from script.js -->
-                        <input v-model='title' type="text" placeholder="title" name="title" class="input-field">
-                        <input v-model='description' type="text" placeholder="description" name="description" class="input-field">
-                        <input v-model='username' type="text" placeholder="username" name="username" class="input-field">
-                        <!-- with file we are listening for a change event instead of v-model -->
-                        <input @change='handleChange' type="file" name="file" accept="image/*" id="choose-file">
-                        <button @click='handleClick' id="upload-button">Submit</button>
-                    </form>
-                    
-                </div>
-            </navbar>
-            
-            <modal-details v-if="imageId" class="modal" :image-id ='imageId' @close="closeModalMain"></modal-details>
-            
-            <div v-else id="images-container">
-                <div v-for="image in images" class="tile"  @click="setValue(image.id)">
-                    <div class="tile-top"></div>
-                    <div class="tile-inner">
-                        <img :src="image.url" class="avatar">
-                    </div>
-                    <div class="tile-title">
-                        <p class="tile-text">{{ image.title }}</p>
-                    </div>
-                </div> 
-            </div>
+        <navbar>
+            <div id="navbar">
+            <form id="form-upload">
+                <i class="fas fa-camera-retro"></i>
+                <!-- v-modal connects input field with data object from script.js -->
+                <input v-model='title' type="text" placeholder="title" name="title" class="input-field">
+                <input v-model='description' type="text" placeholder="description" name="description" class="input-field">
+                <input v-model='username' type="text" placeholder="username" name="username" class="input-field">
+                <!-- with file we are listening for a change event instead of v-model -->
+                <input @change='handleChange' type="file" name="file" accept="image/*" id="choose-file">
+                <button @click='handleClick' id="upload-button">Submit</button>
+            </form>       
         </div>
-        
-
-
+        </navbar>
+        <modal-details v-if="imageId" :image-id ='imageId' @close="closeModalMain"></modal-details>
+        <div v-else id="images-container">
+            <div v-for="image in images" class="tile"  @click="setValue(image.id)">
+                <div class="tile-top"></div>
+                <div class="tile-inner">
+                    <img :src="image.url" class="avatar">
+                </div>
+                <div class="tile-title">
+                    <p class="tile-text">{{ image.title }}</p>
+                </div>
+            </div> 
+        </div>
+    </div>
     <script id="modal-template" type="text/x-template">
-        <div @click="closeModal">
-            {{imageId}}
-            url: {{image.url}} 
-            Title: {{image.title}} 
-            description: {{image.description}} 
-            name: {{image.username}} 
-
-                    <form>
-                        <input v-model='name' type="text" placeholder="name" name="name">
-                        <input v-model='comment' type="text" placeholder="comment" name="comment">
+        <div class="modal">
+            <div class="tile-modal">
+                <div class="tile-top"></div>         
+                <div class="tile-inner-picture"  @click="closeModal" >
+                    <img :src="image.url"  class="avatar-modal">    
+                </div>
+                <div class="tile-inner-modal">
+                    <div class="tile-title-modal">
+                        <span class="tile-text-modal">"{{ image.title }}"</span>
+                        <span class="tile-text-modal">Author: {{ image.username }}</span>
+                    </div>
+                    <h1>{{image.description}}</h1>
+                    <h1>Write a comment:</h1>
+                    <form id="comment-form">
+                        <input v-model='name' type="text" placeholder="name" name="name" class="input-field-comment-name">
+                        <input v-model='comment' type="text" placeholder="comment" name="comment" class="input-field-comment">
                         <input v-model='imageId' type="hidden" name="imageId">
                         <button @click='postComment'>Submit</button>
                     </form>
-
-                <div v-for="com in comments">
-                    <h2>{{com.comment}}</h2>
-                    <h2>{{com.username}}</h2>
-                    <h2>{{com.time}}</h2>
-                
+                    <h1>Comments:</h1>
+                    <div v-for="com in comments" class="comment-box">
+                        <h2>{{com.comment}} {{com.time}}</h2>
+                        <h2>{{com.username}}</h2>
+                    </div>
                 </div>
+            </div>
         </div>
     </script>
-
     <script src="/js/vue.js"></script>
     <script src="/js/axios.min.js"></script>
     <script src="/js/script.js"></script>

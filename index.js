@@ -80,6 +80,31 @@ app.get("/image/:id", (req, res) => {
         });
 });
 
+app.get("/comments/:id", (req, res) => {
+    const { id } = req.params;
+    db.getComments(id)
+        .then(({ rows }) => {
+            console.log("rows: ", rows);
+            res.json(rows);
+        })
+        .catch((err) => {
+            console.log("Error in getSingleImage: ", err);
+            res.sendStatus(500);
+        });
+});
+app.post("/comments/", (req, res) => {
+    const { name, comment, imageID } = req.params;
+    db.postComments(name, comment, imageID)
+        .then(({ rows }) => {
+            console.log("rows: ", rows);
+            res.json(rows);
+        })
+        .catch((err) => {
+            console.log("Error in getSingleImage: ", err);
+            res.sendStatus(500);
+        });
+});
+
 app.listen(8080, () => {
     console.log("image board up and running");
 });

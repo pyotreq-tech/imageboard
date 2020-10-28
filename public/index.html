@@ -44,10 +44,18 @@
 
     <script id="modal-template" type="text/x-template">
         <div>
+            {{imageId}}
             url: {{image.url}} 
             Title: {{image.title}} 
             description: {{image.description}} 
             name: {{image.username}} 
+
+                    <form>
+                        <input v-model='name' type="text" placeholder="name" name="name">
+                        <input v-model='comment' type="text" placeholder="comment" name="comment">
+                        <input v-model='imageId' type="hidden" placeholder="username" name="imageId">
+                        <button @click='postComment'>Submit</button>
+                    </form>
         </div>
     </script>
 

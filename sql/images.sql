@@ -1,10 +1,18 @@
-DROP TABLE IF EXISTS images;
+-- DROP TABLE IF EXISTS images CASCADE;
+-- CREATE TABLE images(
+--     id SERIAL PRIMARY KEY,
+--     url VARCHAR NOT NULL,
+--     username VARCHAR NOT NULL,
+--     title VARCHAR NOT NULL,
+--     description TEXT,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
 
-CREATE TABLE images(
-    id SERIAL PRIMARY KEY,
-    url VARCHAR NOT NULL,
-    username VARCHAR NOT NULL,
-    title VARCHAR NOT NULL,
-    description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+DROP TABLE IF EXISTS comments CASCADE;
+CREATE TABLE comments (
+     id SERIAL PRIMARY KEY,
+     comment TEXT NOT NULL, 
+     username TEXT NOT NULL, 
+     imageid INTEGER NOT NULL UNIQUE REFERENCES images(id) ON DELETE CASCADE,
+     time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

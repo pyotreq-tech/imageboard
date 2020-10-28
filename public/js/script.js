@@ -6,6 +6,9 @@ Vue.component("modal-details", {
     data: function () {
         return {
             image: "",
+            comments: [],
+            name: "",
+            comment: "",
         };
     },
     props: ["imageId"],
@@ -20,6 +23,30 @@ Vue.component("modal-details", {
             .catch(function (err) {
                 console.log("err in GET /singleImage", err);
             });
+
+        axios
+            .get(`/comments/${this.imageId}`)
+            .then(function (res) {
+                me.comments = res.data;
+                console.log(me.comments);
+            })
+            .catch(function (err) {
+                console.log("err in GET /comments", err);
+            });
+    },
+    methods: {
+        postComment: function () {
+            var me = this;
+            axios
+                .post("/comments")
+                .then(function (response) {
+                    console.log("response from /PostComment: ", response);
+                    me.comments.unshift(response.data.rows);
+                })
+                .catch(function (err) {
+                    console.log("error in posting comments: ", err);
+                });
+        },
     },
 });
 

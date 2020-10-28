@@ -8,11 +8,11 @@
 --     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 -- );
 
-DROP TABLE IF EXISTS comments CASCADE;
-CREATE TABLE comments (
-     id SERIAL PRIMARY KEY,
-     comment TEXT NOT NULL, 
-     username TEXT NOT NULL, 
-     imageid INTEGER NOT NULL UNIQUE REFERENCES images(id) ON DELETE CASCADE,
-     time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- DROP TABLE IF EXISTS comments CASCADE;
+-- CREATE TABLE comments (
+--      id SERIAL PRIMARY KEY,
+--      comment TEXT NOT NULL, 
+--      username TEXT NOT NULL, 
+--      imageid INTEGER NOT NULL REFERENCES images(id) ON DELETE CASCADE,
+--      time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );

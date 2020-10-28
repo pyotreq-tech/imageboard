@@ -28,17 +28,25 @@ Vue.component("modal-details", {
             .get(`/comments/${this.imageId}`)
             .then(function (res) {
                 me.comments = res.data;
-                console.log(me.comments);
+                // console.log(me.comments);
             })
             .catch(function (err) {
                 console.log("err in GET /comments", err);
             });
     },
     methods: {
-        postComment: function () {
+        postComment: function (e) {
+            e.preventDefault();
             var me = this;
+
+            let newComment = {};
+
+            newComment.name = this.name;
+            newComment.comment = this.comment;
+            newComment.imageId = this.imageId;
+
             axios
-                .post("/comments")
+                .post("/comment", { newComment })
                 .then(function (response) {
                     console.log("response from /PostComment: ", response);
                     me.comments.unshift(response.data.rows);
@@ -46,6 +54,9 @@ Vue.component("modal-details", {
                 .catch(function (err) {
                     console.log("error in posting comments: ", err);
                 });
+        },
+        closeModal: function () {
+            this.$emit("close");
         },
     },
 });
@@ -80,11 +91,12 @@ new Vue({
             // we are handling that because of sending a file, otherwise we send just an object
             var formData = new FormData();
             formData.append("title", this.title);
-            formData.append("description", this.title);
+            formData.append("description", this.description);
             formData.append("username", this.username);
             formData.append("file", this.file);
             console.log("formData: ", formData);
             var me = this;
+            console.log(formData);
             axios
                 .post("/images", formData)
                 .then(function (response) {
@@ -102,6 +114,10 @@ new Vue({
         },
         setValue: function (id) {
             this.imageId = id;
+        },
+
+        closeModalMain: function () {
+            this.imageId = null;
         },
     },
 });

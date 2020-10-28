@@ -25,7 +25,7 @@
                 </div>
             </navbar>
             
-            <modal-details v-if="imageId" class="modal" :image-id ='imageId'></modal-details>
+            <modal-details v-if="imageId" class="modal" :image-id ='imageId' @close="closeModalMain"></modal-details>
             
             <div v-else id="images-container">
                 <div v-for="image in images" class="tile"  @click="setValue(image.id)">
@@ -43,7 +43,7 @@
 
 
     <script id="modal-template" type="text/x-template">
-        <div>
+        <div @click="closeModal">
             {{imageId}}
             url: {{image.url}} 
             Title: {{image.title}} 
@@ -53,9 +53,16 @@
                     <form>
                         <input v-model='name' type="text" placeholder="name" name="name">
                         <input v-model='comment' type="text" placeholder="comment" name="comment">
-                        <input v-model='imageId' type="hidden" placeholder="username" name="imageId">
+                        <input v-model='imageId' type="hidden" name="imageId">
                         <button @click='postComment'>Submit</button>
                     </form>
+
+                <div v-for="com in comments">
+                    <h2>{{com.comment}}</h2>
+                    <h2>{{com.username}}</h2>
+                    <h2>{{com.time}}</h2>
+                
+                </div>
         </div>
     </script>
 

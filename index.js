@@ -8,6 +8,7 @@ const s3 = require("./s3");
 
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 const diskStorage = multer.diskStorage({
     destination: function (req, file, callback) {
@@ -41,8 +42,8 @@ app.get("/images", (req, res) => {
 
 app.post("/images", uploader.single("file"), s3.upload, (req, res) => {
     const { username, title, description } = req.body;
-    console.log("image route reached: ", req.body);
-    console.log("file: ", req.file);
+    // console.log("image route reached: ", req.body);
+    // console.log("file: ", req.file);
     // we need to send response to Vue, so .then part can run, otherwise it will only run .catch in script.js
     if (req.file) {
         const { filename } = req.file;
@@ -71,7 +72,7 @@ app.get("/image/:id", (req, res) => {
     const { id } = req.params;
     db.getSingleImage(id)
         .then(({ rows }) => {
-            console.log("rows: ", rows);
+            // console.log("rows: ", rows);
             res.json(rows);
         })
         .catch((err) => {
@@ -84,7 +85,7 @@ app.get("/comments/:id", (req, res) => {
     const { id } = req.params;
     db.getComments(id)
         .then(({ rows }) => {
-            console.log("rows: ", rows);
+            // console.log("rows: ", rows);
             res.json(rows);
         })
         .catch((err) => {
@@ -92,15 +93,17 @@ app.get("/comments/:id", (req, res) => {
             res.sendStatus(500);
         });
 });
-app.post("/comments/", (req, res) => {
-    const { name, comment, imageID } = req.params;
-    db.postComments(name, comment, imageID)
+app.post("/comment", (req, res) => {
+    console.log("request body: ", req.body);
+    const { name, comment, imageId } = req.body.newComment;
+    db.postComments(name, comment, imageId)
         .then(({ rows }) => {
+            rows = rows[0];
             console.log("rows: ", rows);
-            res.json(rows);
+            res.json({ rows });
         })
         .catch((err) => {
-            console.log("Error in getSingleImage: ", err);
+            console.log("Error in getComments: ", err);
             res.sendStatus(500);
         });
 });

@@ -32,7 +32,7 @@ exports.postComments = (comment, username, imageId) => {
     return db.query(
         `INSERT INTO comments (comment, username, imageId) 
         VALUES ($1, $2, $3) 
-        RETURNING comment, username, imageId, ;
+        RETURNING *;
 `,
         [comment, username, imageId]
     );

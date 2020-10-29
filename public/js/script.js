@@ -70,6 +70,7 @@ new Vue({
         username: "",
         file: null,
         imageId: null,
+        button: true,
     },
     mounted: function () {
         // important to store this in var so it does not lose its reference
@@ -77,6 +78,7 @@ new Vue({
         axios
             .get("/images")
             .then(function (response) {
+                console.log("response from getImages: ", response);
                 me.images = response.data;
             })
             .catch(function (err) {
@@ -118,6 +120,32 @@ new Vue({
 
         closeModalMain: function () {
             this.imageId = null;
+        },
+
+        moreImages: function (e) {
+            e.preventDefault();
+
+            let numbers = this.images.map(({ id }) => id);
+            let minNumber = Math.min(...numbers);
+            var me = this;
+
+            axios
+                .get(`/images/${minNumber}`)
+                .then(function (response) {
+                    console.log("response from nextImages: ", response);
+                    me.images = [...me.images, ...response.data];
+                    console.log("lowest id: ", response.data[0].lowestId);
+                    if (
+                        me.images.filter(function (e) {
+                            return e.id === response.data[0].lowestId;
+                        }).length > 0
+                    ) {
+                        me.button = false;
+                    }
+                })
+                .catch(function (err) {
+                    console.log("err in GET /more Images", err);
+                });
         },
     },
 });

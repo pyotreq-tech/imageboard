@@ -23,16 +23,21 @@
         </div>
         </navbar>
         <modal-details v-if="imageId" :image-id ='imageId' @close="closeModalMain"></modal-details>
-        <div v-else id="images-container">
-            <div v-for="image in images" class="tile"  @click="setValue(image.id)">
-                <div class="tile-top"></div>
-                <div class="tile-inner">
-                    <img :src="image.url" class="avatar">
-                </div>
-                <div class="tile-title">
-                    <p class="tile-text">{{ image.title }}</p>
-                </div>
-            </div> 
+        <div id="board">
+            <div id="images-container">
+                <div v-for="image in images" class="tile"  @click="setValue(image.id)">
+                    <div class="tile-top"></div>
+                    <div class="tile-inner">
+                        <img :src="image.url" class="avatar">
+                    </div>
+                    <div class="tile-title">
+                        <p class="tile-text">{{ image.title }}</p>
+                    </div>
+                </div> 
+            </div>
+            <div v-if="button">
+                <button id="more" @click="moreImages">More</button>
+            </div>
         </div>
     </div>
     <script id="modal-template" type="text/x-template">

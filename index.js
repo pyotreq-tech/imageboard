@@ -40,6 +40,19 @@ app.get("/images", (req, res) => {
         });
 });
 
+app.get("/images/:id", (req, res) => {
+    const { id } = req.params;
+    db.getMoreImages(id)
+        .then(({ rows }) => {
+            console.log("next Images sent to Vue: ", rows);
+            res.json(rows);
+        })
+        .catch((err) => {
+            console.log("Error in getMoreImages: ", err);
+            res.sendStatus(500);
+        });
+});
+
 app.post("/images", uploader.single("file"), s3.upload, (req, res) => {
     const { username, title, description } = req.body;
     // console.log("image route reached: ", req.body);

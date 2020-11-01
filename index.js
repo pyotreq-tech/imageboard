@@ -148,7 +148,7 @@ app.post("/comment", (req, res) => {
     db.postComments(comment, name, imageId)
         .then(({ rows }) => {
             rows = rows[0];
-            // console.log("rows: ", rows);
+            console.log("rows: ", rows);
             res.json({ rows });
         })
         .catch((err) => {

@@ -52,16 +52,50 @@ app.get("/images/:id", (req, res) => {
             res.sendStatus(500);
         });
 });
+app.get("/images/new/:id", (req, res) => {
+    const { id } = req.params;
+    console.log("/images/new/:id : ", id);
+    db.getMoreThanMax(id)
+        .then(({ rows }) => {
+            if (rows.length !== 0) {
+                console.log("rows from get newly added", rows);
+                res.json(rows);
+            } else {
+                console.log("no new");
+                res.json(rows);
+            }
+        })
+        .catch((err) => {
+            console.log("Error in getMoreImages: ", err);
+            res.sendStatus(500);
+        });
+});
+app.get("/tags/:tag", (req, res) => {
+    const { tag } = req.params;
+    console.log("TAG IS", tag);
+    db.getImagesByTag(tag)
+        .then(({ rows }) => {
+            // console.log("images with tag sent to Vue: ", rows);
+            rows.forEach(function (arg) {
+                console.log(arg.title);
+            });
+            res.json(rows);
+        })
+        .catch((err) => {
+            console.log("Error in getImagesByTag: ", err);
+            res.sendStatus(500);
+        });
+});
 
 app.post("/images", uploader.single("file"), s3.upload, (req, res) => {
-    const { username, title, description } = req.body;
+    const { username, title, description, tags } = req.body;
     // console.log("image route reached: ", req.body);
     // console.log("file: ", req.file);
     // we need to send response to Vue, so .then part can run, otherwise it will only run .catch in script.js
     if (req.file) {
         const { filename } = req.file;
         const url = `https://s3.amazonaws.com/spicedling/${filename}`;
-        db.postImage(url, username, title, description)
+        db.postImage(url, username, title, description, tags)
             .then(({ rows }) => {
                 rows = rows[0];
                 res.json({
@@ -83,7 +117,9 @@ app.post("/images", uploader.single("file"), s3.upload, (req, res) => {
 
 app.get("/image/:id", (req, res) => {
     const { id } = req.params;
-    db.getSingleImage(id)
+    const idMinus = parseInt(id) - 1;
+    const idPlus = parseInt(id) + 1;
+    db.getSingleImageModified(id, idMinus, idPlus)
         .then(({ rows }) => {
             // console.log("rows: ", rows);
             res.json(rows);
@@ -109,14 +145,28 @@ app.get("/comments/:id", (req, res) => {
 app.post("/comment", (req, res) => {
     console.log("request body: ", req.body);
     const { name, comment, imageId } = req.body.newComment;
-    db.postComments(name, comment, imageId)
+    db.postComments(comment, name, imageId)
         .then(({ rows }) => {
             rows = rows[0];
-            console.log("rows: ", rows);
+            // console.log("rows: ", rows);
             res.json({ rows });
         })
         .catch((err) => {
             console.log("Error in getComments: ", err);
+            res.sendStatus(500);
+        });
+});
+app.get("/delete/:id", (req, res) => {
+    const { id } = req.params;
+    console.log("request body: ", id);
+    db.deleteImage(id)
+        .then(({ rows }) => {
+            rows = rows[0];
+            // console.log("rows: ", rows);
+            res.json({ rows });
+        })
+        .catch((err) => {
+            console.log("Error in deletingImage: ", err);
             res.sendStatus(500);
         });
 });

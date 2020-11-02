@@ -46,7 +46,7 @@
         <modal-details v-if="imageId" :current-tag = 'currentTag' :image-id ='imageId'  @close="closeModalMain" @show="showByTagMain" @remove="removeImage"></modal-details>
         <div id="board">
             <div id="images-container">
-                <div v-for="image in images" class="tile">
+                <div v-for="image in images" class="tile" :key="image.id">
                     <a :href='"#" + image.id'>
                         <div class="tile-top">
                         </div>

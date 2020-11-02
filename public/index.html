@@ -4,66 +4,123 @@
     <title>Image Board</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/6146a55896.js" crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/ac25152698.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div id="main">
         <navbar>
             <div id="navbar">
             <form id="form-upload">
-                <i class="fas fa-camera-retro"></i>
+                <a href="/" class="black"><div id="logo-font">#CityBoard</div></a>
+                <a href="/" class="black"><i class="fas fa-city"></i></a>
                 <!-- v-modal connects input field with data object from script.js -->
-                <input v-model='title' type="text" placeholder="title" name="title" class="input-field">
-                <input v-model='description' type="text" placeholder="description" name="description" class="input-field">
+                <input v-model='title' type="text" placeholder="name" name="title" class="input-field">
+                <input v-model='description' type="text" placeholder="description" name="description" class="input-field description-field">
                 <input v-model='username' type="text" placeholder="username" name="username" class="input-field">
+                <input v-model='tags' type="text" placeholder="tags, coma, separated" name="tags" class="input-field description-field">
                 <!-- with file we are listening for a change event instead of v-model -->
-                <input @change='handleChange' type="file" name="file" accept="image/*" id="choose-file">
-                <button @click='handleClick' id="upload-button">Submit</button>
+
+
+                <input @change='handleChange' type="file" name="file" accept="image/*" id="file" class="inputfile" />
+                <label for="file"><i class="fas fa-cloud-upload-alt arrow"></i></label>
+
+
+                <!-- <input @change='handleChange' type="file" name="file" accept="image/*" id="choose-file"> -->
+                <button @click='handleClick' id="upload-button" class="hand">Submit</button>
             </form>       
         </div>
         </navbar>
-        <modal-details v-if="imageId" :image-id ='imageId' @close="closeModalMain"></modal-details>
+
+        <div v-if="currentTag" class="current-tags" @click="closeTag">
+            <div  class="tag hand" >
+                {{currentTag}} <i class="fas fa-backspace"></i>
+            </div>
+        </div>
+
+        <div v-if="newAwaitingImages.length > 0 && !currentTag" class="current-tags" >
+            <div  class="tag hand" @click="addNewlyAdded">
+                There are some new images which has been uploaded since the beginning of your visit: {{newAwaitingImages.length}}. Click to display them <i class="fas fa-plus left-margin"></i>
+            </div>
+        </div>
+  
+        <modal-details v-if="imageId" :current-tag = 'currentTag' :image-id ='imageId'  @close="closeModalMain" @show="showByTagMain" @remove="removeImage"></modal-details>
         <div id="board">
             <div id="images-container">
-                <div v-for="image in images" class="tile"  @click="setValue(image.id)">
-                    <div class="tile-top"></div>
-                    <div class="tile-inner">
-                        <img :src="image.url" class="avatar">
-                    </div>
-                    <div class="tile-title">
-                        <p class="tile-text">{{ image.title }}</p>
-                    </div>
-                </div> 
+                <div v-for="image in images" class="tile">
+                    <a :href='"#" + image.id'>
+                        <div class="tile-top">
+                        </div>
+                        <div class="tile-inner">
+                            <img :src="image.url" class="avatar">
+                        </div>
+                        <div class="tile-title">
+                            
+                            <p class="tile-text">{{ image.title }}</p>
+                        </div>
+                    </a> 
+                </div>
             </div>
-            <div v-if="button">
-                <button id="more" @click="moreImages">More</button>
+            <div v-if="button && !currentTag">
+                <i class="fas fa-chevron-circle-down hand" id="more" @click="moreImages"></i>
+                <!-- <button id="more" @click="moreImages">More</button> -->
             </div>
         </div>
     </div>
     <script id="modal-template" type="text/x-template">
-        <div class="modal">
+        <div class="modal" @click.self="closeModal">
             <div class="tile-modal">
-                <div class="tile-top"></div>         
-                <div class="tile-inner-picture"  @click="closeModal" >
+                <div class="tile-top-modal">
+                    <div v-if="!currentTag">
+                        <a :href='"#" + image.nextImage' v-if="image.nextImage">
+                            <i class="fas fa-angle-left arrow"></i>
+                        </a>
+                        <a :href='"#" + image.previousImage' v-if="image.previousImage">
+                            <i class="fas fa-angle-right arrow"></i>
+                        </a>
+
+                    </div>
+                    <div v-else class="tag-name-div">
+                        <i class="fas fa-tag arrow tag-smaller"></i>
+                        <a class="tag-name">{{currentTag}}</a>
+                    </div>
+                    <div>
+                        <i class="far fa-trash-alt arrow bin-smaller hand" @click="deleteImage(image.id)"></i>
+                        <i class="fas fa-times arrow hand" @click="closeModal"></i>
+                    </div>
+                </div>   
+                <!-- does it have to be a new component? -->
+                <div v-if="splittedArray" class="tags" >
+                    <div class="tag" v-for="tag in splittedArray"  >
+                        <a @click="showByTag(tag)" class="hand" >
+                        <i class="fas fa-tag"></i> {{tag}}
+                        </a>
+                    </div>
+                </div>
+                <div class="tile-inner-picture">
                     <img :src="image.url"  class="avatar-modal">    
                 </div>
                 <div class="tile-inner-modal">
                     <div class="tile-title-modal">
-                        <span class="tile-text-modal">"{{ image.title }}"</span>
+                        <span class="tile-text-modal">{{ image.title }}</span>
                         <span class="tile-text-modal">Author: {{ image.username }}</span>
                     </div>
-                    <h1>{{image.description}}</h1>
-                    <h1>Write a comment:</h1>
+                    <p class="description">{{image.description}}</p>
+                    <h1>Leave a comment:</h1>
                     <form id="comment-form">
                         <input v-model='name' type="text" placeholder="name" name="name" class="input-field-comment-name">
-                        <input v-model='comment' type="text" placeholder="comment" name="comment" class="input-field-comment">
                         <input v-model='imageId' type="hidden" name="imageId">
-                        <button @click='postComment'>Submit</button>
+                        <input v-model='comment' type="text" placeholder="comment" name="comment" class="input-field-comment">
+                        <i class="fas fa-plus hand" @click='postComment' id="add-comment-button"></i>
+                        <button @click='postComment' id="add-comment-button-hidden">were</button>
                     </form>
                     <h1>Comments:</h1>
+                    <div v-if="comment || name" class="comment-box">
+                        <h2>{{ name }}</h2>
+                        <h2>{{ comment }}</h2>
+                    </div>
                     <div v-for="com in comments" class="comment-box">
-                        <h2>{{com.comment}} {{com.time}}</h2>
-                        <h2>{{com.username}}</h2>
+                        <h2>{{com.username}} {{com.time.slice(0, 10)}} {{com.time.slice(11,16)}}</h2>
+                        <h2>{{com.comment}}</h2>
                     </div>
                 </div>
             </div>

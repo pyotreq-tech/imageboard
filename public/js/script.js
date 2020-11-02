@@ -9,32 +9,52 @@ Vue.component("modal-details", {
             comments: [],
             name: "",
             comment: "",
+            newTag: "LOL",
         };
     },
-    props: ["imageId"],
+    watch: {
+        imageId: function () {
+            this.getData();
+        },
+    },
+    props: ["imageId", "currentTag"],
     template: "#modal-template",
     mounted: function () {
-        var me = this;
-        axios
-            .get(`/image/${this.imageId}`)
-            .then(function (response) {
-                me.image = response.data[0];
-            })
-            .catch(function (err) {
-                console.log("err in GET /singleImage", err);
-            });
-
-        axios
-            .get(`/comments/${this.imageId}`)
-            .then(function (res) {
-                me.comments = res.data;
-                // console.log(me.comments);
-            })
-            .catch(function (err) {
-                console.log("err in GET /comments", err);
-            });
+        this.getData();
     },
     methods: {
+        getData: function () {
+            var me = this;
+            axios
+                .get(`/image/${this.imageId}`)
+                .then(function (response) {
+                    if (response.data != 0) {
+                        me.image = response.data[0];
+                        // let tagsArray = response.data[0].tags.split(",");
+                        // tagsArray.forEach(function (e) {
+                        //     me.tag.push(e);
+                        // });
+                        // console.log(me.tag);
+                        console.log("response received");
+                    } else {
+                        console.log("no response received");
+                        me.$emit("close");
+                    }
+                })
+                .catch(function (err) {
+                    console.log("err in GET /singleImage", err);
+                });
+
+            axios
+                .get(`/comments/${this.imageId}`)
+                .then(function (res) {
+                    me.comments = res.data;
+                    // console.log(me.comments);
+                })
+                .catch(function (err) {
+                    console.log("err in GET /comments", err);
+                });
+        },
         postComment: function (e) {
             e.preventDefault();
             var me = this;
@@ -48,8 +68,13 @@ Vue.component("modal-details", {
             axios
                 .post("/comment", { newComment })
                 .then(function (response) {
-                    console.log("response from /PostComment: ", response);
+                    console.log(
+                        "response from /PostComment: ",
+                        response.data.rows
+                    );
                     me.comments.unshift(response.data.rows);
+                    me.name = "";
+                    me.comment = "";
                 })
                 .catch(function (err) {
                     console.log("error in posting comments: ", err);
@@ -57,6 +82,35 @@ Vue.component("modal-details", {
         },
         closeModal: function () {
             this.$emit("close");
+        },
+        showByTag: function (arg) {
+            console.log("My .js chosen tag is:", arg);
+            // here I have to change
+            this.newTag = arg;
+            // console.log("The one before emit: ", newTag);
+            this.$emit("show", arg);
+        },
+        deleteImage: function (arg) {
+            var me = this;
+
+            axios
+                .get(`/delete/${arg}`)
+                .then(function () {
+                    console.log("please delete me, id:", arg);
+
+                    me.$emit("remove", arg);
+                })
+                .catch(function (err) {
+                    console.log("err in GET /comments", err);
+                });
+        },
+    },
+    computed: {
+        splittedArray: function () {
+            if (this.image.tags) {
+                console.log(this.image.tags.split(", "));
+                return this.image.tags.split(", ");
+            }
         },
     },
 });
@@ -68,24 +122,95 @@ new Vue({
         title: "",
         description: "",
         username: "",
+        tags: "",
         file: null,
-        imageId: null,
+        imageId: location.hash.slice(1),
         button: true,
+        currentTag: null,
+        addNewPopup: null,
+        newAwaitingImages: [],
+        maxNumberQuery: null,
     },
     mounted: function () {
-        // important to store this in var so it does not lose its reference
         var me = this;
+        addEventListener("hashchange", function () {
+            console.log("the hash changed");
+            me.imageId = location.hash.slice(1);
+        });
+        // important to store this in var so it does not lose its reference
         axios
             .get("/images")
             .then(function (response) {
                 console.log("response from getImages: ", response);
                 me.images = response.data;
+
+                setTimeout(function () {
+                    me.checkForNew();
+                }, 3000);
             })
             .catch(function (err) {
                 console.log("err in GET /images: ", err);
             });
     },
     methods: {
+        checkForNew: function () {
+            let numbers = this.images.map(({ id }) => id);
+            let maxNumber = Math.max(...numbers);
+            console.log("maxNumber: ", maxNumber);
+            this.maxNumberQuery = maxNumber;
+            this.request(maxNumber);
+        },
+
+        request: function (maxNumberAwaiting) {
+            console.log("function request is running: ", maxNumberAwaiting);
+            var me = this;
+            if (!this.currentTag) {
+                axios
+                    .get(`/images/new/${maxNumberAwaiting}`)
+                    .then(function (response) {
+                        if (response.data.length) {
+                            console.log("nowe dodane");
+
+                            let awaitingNumbers = response.data.map(
+                                ({ id }) => id
+                            );
+                            let maxNumberAwaiting = Math.max(
+                                ...awaitingNumbers
+                            );
+
+                            me.maxNumberQuery = maxNumberAwaiting;
+
+                            me.newAwaitingImages = [
+                                ...response.data,
+                                ...me.newAwaitingImages,
+                            ];
+
+                            console.log(me.newAwaitingImages);
+                            me.addNewPopup = true;
+                            // setTimeout(me.request(me.maxNumberQuery), 3000);
+                            setTimeout(function () {
+                                me.request(me.maxNumberQuery);
+                            }, 3000);
+                        } else {
+                            console.log("nowe nie dodane");
+                            // setTimeout(me.request(me.maxNumberQuery), 3000);
+                            setTimeout(function () {
+                                me.request(me.maxNumberQuery);
+                            }, 3000);
+                        }
+                    })
+                    .catch(function (err) {
+                        console.log("err in GET /max number Images", err);
+                    });
+            }
+        },
+
+        addNewlyAdded: function () {
+            console.log;
+            this.images = [...this.newAwaitingImages, ...this.images];
+            this.newAwaitingImages = [];
+        },
+
         handleClick: function (e) {
             e.preventDefault();
             // console.log("this!: ", this);
@@ -96,6 +221,7 @@ new Vue({
             formData.append("description", this.description);
             formData.append("username", this.username);
             formData.append("file", this.file);
+            formData.append("tags", this.tags);
             console.log("formData: ", formData);
             var me = this;
             console.log(formData);
@@ -104,12 +230,27 @@ new Vue({
                 .then(function (response) {
                     console.log("response from /Post: ", response);
                     me.images.unshift(response.data.rows);
+                    me.maxNumberQuery = null;
+
+                    me.title = "";
+                    me.description = "";
+                    me.username = "";
+                    me.tags = "";
+                    me.file = null;
+
+                    const uploadButton = document.getElementById("file");
+                    uploadButton.nextElementSibling.innerHTML =
+                        '<i class="fas fa-cloud-upload-alt arrow"></i>';
                 })
                 .catch(function (err) {
                     console.log("error in posting images: ", err);
                 });
         },
         handleChange: function (e) {
+            e.target.nextElementSibling.innerHTML =
+                '<i class="fas fa-vote-yea arrow"></i>';
+            // console.log("label: ", label);
+
             // console.log("handleChange is running");
             // console.log("file: ", e.target.files[0]);
             this.file = e.target.files[0];
@@ -120,6 +261,24 @@ new Vue({
 
         closeModalMain: function () {
             this.imageId = null;
+            location.hash = "0";
+        },
+        showByTagMain: function (tag) {
+            console.log("My newest tag is: ", tag);
+            this.imageId = null;
+            location.hash = "0";
+            var me = this;
+            axios
+                .get(`/tags/${tag}`)
+                .then(function (response) {
+                    console.log("response from getImages: ", response);
+                    me.images = response.data;
+                    me.currentTag = tag;
+                    me.noTagFiltering = false;
+                })
+                .catch(function (err) {
+                    console.log("err in GET /images: ", err);
+                });
         },
 
         moreImages: function (e) {
@@ -145,6 +304,32 @@ new Vue({
                 })
                 .catch(function (err) {
                     console.log("err in GET /more Images", err);
+                });
+        },
+        removeImage: function (id) {
+            console.log("got it, I will delete you");
+            this.images = this.images.filter(function (obj) {
+                return obj.id !== id;
+            });
+            location.hash = "0";
+        },
+        closeTag: function () {
+            // this.currentTag = null;
+            // this.button = true;
+            var me = this;
+
+            axios
+                .get("/images")
+                .then(function (response) {
+                    console.log("response from getImages: ", response);
+                    me.images = response.data;
+                    me.maxNumberQuery = null;
+                    me.currentTag = null;
+                    me.button = true;
+                    setTimeout(me.checkForNew, 3000);
+                })
+                .catch(function (err) {
+                    console.log("err in GET /images: ", err);
                 });
         },
     },
